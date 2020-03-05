@@ -28,8 +28,36 @@ Entre sus principales funcionalidades, que hacen olvidarnos de productos de pago
 
 ```bash
 wget https://sourceforge.net/projects/phpipam/files/phpipam-1.4.tar
-
 tar -xvf phpipam-1.4.tar -C /opt
+```
+
+> **NOTA**: También se puede utilizar la alternativa GitHub.
+
+> ```bash
+> git clone --recursive https://github.com/phpipam/phpipam.git /opt/phpipam
+> cd /opt/phpipam
+> git checkout -b 1.4 origin/1.4
+> ```
+
+- Establecer permisos
+
+```bash
+chown -R www-data:www-data /opt/phpipam
+find /opt/phpipam -type f \-exec chmod 644 {} \;
+find /opt/phpipam -type d \-exec chmod 755 {} \;
+```
+
+- Definir parámetros de acceso a la base de datos
+
+```bash
+cp /opt/phpipam/config.dist.php /opt/phpipam/config.php
+nano /opt/phpipam/config.php
+
+$ db ['host'] = 'localhost';
+$ db ['user'] = 'phpipam_admin';
+$ db ['pass'] = 'My$ecr3tP@s$w0rd.';
+$ db ['name'] = 'phpipam_db';
+$ db ['puerto'] = 3306;
 ```
 
 - Gestor de base de datos
@@ -46,20 +74,38 @@ apt install mariadb-server mariadb-client
 mysql -u root -p
 
 MariaDB [(none)]> CREATE DATABASE phpipam_db;
-MariaDB [(none)]> GRANT ALL ON phpipam_db.* TO 'phpipam_admin'@'localhost' IDENTIFIED BY 'My4ecre3tP@s$w0rd.';
+MariaDB [(none)]> GRANT ALL ON phpipam_db.* TO 'phpipam_admin'@'localhost' IDENTIFIED BY 'My$ecr3tP@s$w0rd.';
 MariaDB [(none)]> FLUSH PRIVILEGES;
 MariaDB [(none)]> QUIT;
 
-mysql -u root -p phpipam_db < /opt/db/SCHEMA.sql
+mysql -u phpipam_admin -p phpipam_db < /opt/db/SCHEMA.sql
 ```
 
-- Servidor web y zona horaria
+- Servidor web, certificado de seguridad `TLS/SSL` y definición de zona horaria
+
+    #### Crear certificado de seguridad TLS/SSL
+
+    ```bash
+    openssl req -x509 -nodes -days 3650 -sha512 \
+        -subj "/C=CU/ST=Provincia/L=Ciudad/O=EXAMPLE TLD/OU=IT/CN=phpipam.example.tld/emailAddress=postmaster@example.tld/" \
+        -newkey rsa:4096 \
+        -out /etc/ssl/certs/phpIPAM.crt \
+        -keyout /etc/ssl/private/phpIPAM.key
+
+    openssl dhparam -out /etc/ssl/dh2048.pem 2048
+    chmod 0444 /etc/ssl/certs/phpIPAM.crt
+    chmod 0400 /etc/ssl/private/phpIPAM.key
+    ```
 
     #### `Apache`
+
+    - Instalar paquetes necesarios
 
     ```bash
     apt install apache2 php-cli libapache2-mod-php php-curl php-mysql php-curl php-gd php-intl php-pear php-imap php-memcache php-pspell php-recode php-tidy php-xmlrpc php-mbstring php-gettext php-gmp php-json php-xml php-ldap php-mcrypt
     ```
+
+    - Definir zona horaria
 
     ```bash
     sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
@@ -67,11 +113,63 @@ mysql -u root -p phpipam_db < /opt/db/SCHEMA.sql
         /etc/php/7*/cli/php.ini
     ```
 
+    - Crear `VirtualHost`
+
+    ```bash
+    nano /etc/apache2/sites-available/phpIPAM.conf
+
+    <VirtualHost *:80>
+        RewriteEngine on
+        RewriteCond %{HTTPS} =off
+        RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L,R=301]
+    </VirtualHost>
+    <IfModule mod_ssl.c>
+        <VirtualHost phpipam.example.tld:443>
+            ServerName phpipam.example.tld
+            ServerAdmin postmaster@example.tld
+            DirectoryIndex index.php
+            DocumentRoot /opt/phpipam
+            <Directory "/opt/phpipam">
+                Options Indexes FollowSymLinks MultiViews
+                AllowOverride All
+                Permit all granted
+            </Directory>
+            SSLEngine on
+            SSLCertificateFile /etc/ssl/certs/phpIPAM.crt
+            SSLCertificateKeyFile /etc/ssl/private/phpIPAM.key
+            <FilesMatch "\.(cgi|shtml|phtml|php)$">
+                SSLOptions +StdEnvVars
+            </FilesMatch>
+            <Directory /usr/lib/cgi-bin>
+                SSLOptions +StdEnvVars
+            </Directory>
+            BrowserMatch "MSIE [2-6]" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
+            BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
+            ErrorLog ${APACHE_LOG_DIR}/phpIPAM_error.log
+            CustomLog ${APACHE_LOG_DIR}/phpIPAM_access.log combined
+        </VirtualHost>
+    </IfModule>
+    ```
+
+    - Activar módulos necesarios, `VirtualHost` y reiniciar servidor web
+
+    ```bash
+    a2enmod rewrite ssl
+    a2ensite /etc/apache2/sites-available/phpIPAM.conf
+    systemctl restart apache2.service
+    ```
+
+    > **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se encuentran en `/var/logs/apache2/`. Para monitorean sus respectivas salidas, ejecutar `tail -fn100 /var/logs/apache2/NOMBRE_FICHERO_LOG`.
+
     #### `Nginx`
+
+    - Instalar paquetes necesarios
 
     ```bash
     apt install nginx-full php-fpm php-curl php-mysql php-curl php-gd php-intl php-pear php-imap php-memcache php-pspell php-recode php-tidy php-xmlrpc php-mbstring php-gettext php-gmp php-json php-xml php-ldap php-mcrypt
     ```
+
+    - Definir zona horaria
 
     ```bash
     sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
@@ -79,23 +177,90 @@ mysql -u root -p phpipam_db < /opt/db/SCHEMA.sql
         /etc/php/7*/fpm/php.ini
     ```
 
-- Crear certificado de seguridad TLS/SSL
+    - Crear `VirtualHost`
 
-```bash
-openssl req -x509 -nodes -days 3650 -sha512 \
-    -subj "/C=CU/ST=Provincia/L=Ciudad/O=EXAMPLE TLD/OU=IT/CN=phpipam.example.tld/emailAddress=postmaster@example.tld/" \
-    -newkey rsa:4096 \
-    -out /etc/ssl/certs/phpIPAM.crt \
-    -keyout /etc/ssl/private/phpIPAM.key
+    ```bash
+    nano /etc/nginx/sites-available
 
-openssl dhparam -out /etc/ssl/dh2048.pem 2048
-chmod 0444 /etc/ssl/certs/phpIPAM.crt
-chmod 0400 /etc/ssl/private/phpIPAM.key
-```
+    proxy_cache_path /tmp/cache keys_zone=cache:10m levels=1:2 inactive=600s max_size=100m;
+    limit_req_zone $binary_remote_addr zone=download:10m rate=2r/s;
+    server {
+        listen 80;
+        listen 443 ssl http2;
+        root /opt/phpipam;
+        index index.php;
+        server_name phpipam.example.tld;
+        if ($scheme = http) {
+            return 301 https://$server_name$request_uri;
+        }
+        ssi on;
+        ssl_certificate /etc/ssl/certs/phpIPAM.crt;
+        ssl_certificate_key /etc/ssl/private/phpIPAM.key;
+        charset utf-8;
+        ssl_dhparam /etc/ssl/dh2048.pem;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        ssl_prefer_server_ciphers on;
+        ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+        ssl_ecdh_curve secp384r1;
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_tickets off;
+        ssl_stapling_verify on;
+        resolver 127.0.0.1 valid=300s;
+        resolver_timeout 5s;
+        add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+        add_header X-Content-Type-Options nosniff;
+        proxy_cache cache;
+        proxy_cache_valid 200 1s;
+        location ~ [^/]\.php(/|$) {
+            fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+            if (!-f $document_root$fastcgi_script_name) {
+                return 404;
+            }
+            fastcgi_param HTTP_PROXY "";
+            fastcgi_pass unix:/var/run/php/php7*-fpm.sock;
+            include snippets/fastcgi-php.conf;
+        }
+        location ~ /\. {
+            deny all;
+        }
+        location = /favicon.ico {
+            log_not_found off;
+            access_log off;
+        }
+        location = /robots.txt {
+            access_log off;
+            log_not_found off;
+        }
+        location /phpipam/ {
+            try_files $uri $uri/ /phpipam/index.php;
+            index index.php;
+        }
+        location /phpipam/api/ {
+            try_files $uri $uri/ /phpipam/api/index.php;
+        }
+        access_log /var/log/nginx/phpIPAM_access.log;
+        error_log /var/log/nginx/phpIPAM_error.log;
+    }
+    ```
+
+    - Habilitar `VirtualHost` y reiniciar servidor web
+
+    ```bash
+    ln -s /etc/apache2/sites-available/phpIPAM.conf /etc/apache2/sites-enabled/
+    systemctl restart nginx.service
+    ```
+
+    > **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se encuentran en `/var/logs/apache2/`. Para monitorean sus respectivas salidas, ejecutar `tail -fn100 /var/logs/nginx/NOMBRE_FICHERO_LOG`.
+
+## Conclusiones
+
+Acceder a la aplicación web, tecleando la `URL` [phpipam.example.tld](https://phpipam.example.tld/), en el navegador de preferencia y usar el par usuario/contraseña `admin/phpipam` para el proceso de `login`.
 
 ## Referencias
 
 * [phpIPAM Open-source IP address management](https://phpipam.net/)
+* [phpipam installation guide](https://phpipam.net/documents/installation/)
 * [phpIPAM on nginx](https://phpipam.net/news/phpipam-on-nginx/)
 * [¿Cómo usar phpIPAM como herramienta auxiliar en Pandora FMS?](https://pandorafms.com/blog/es/phpipam/)
 * [Tag: phpIPAM](https://www.jorgedelacruz.es/tag/phpipam/)
+* [Installing phpIPAM on Ubuntu 16.04](https://ithinkvirtual.com/2016/05/08/installing-phpipam-on-ubuntu-16-04/)
