@@ -252,9 +252,13 @@ mysql -u phpipam_admin -p phpipam_db < /opt/db/SCHEMA.sql
 
     > **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se encuentran en `/var/logs/apache2/`. Para monitorean sus respectivas salidas, ejecutar `tail -fn100 /var/logs/nginx/NOMBRE_FICHERO_LOG`.
 
+Finalmente, acceder a la aplicación web, tecleando la `URL` [phpipam.example.tld](https://phpipam.example.tld/), en el navegador de preferencia y usar el par usuario/contraseña `admin/phpipam` para el proceso de `login`.
+
 ## Conclusiones
 
-Acceder a la aplicación web, tecleando la `URL` [phpipam.example.tld](https://phpipam.example.tld/), en el navegador de preferencia y usar el par usuario/contraseña `admin/phpipam` para el proceso de `login`.
+La explotación del sistema, si se es administrador de red, o se tienen conocimientos de redes, direccionamiento `IPv4/IPv6`, `VLANs`, `DNS`, etc.; no es complicada. No obstante en las referencias, se listan enlaces que pueden servir de ayuda o realizar búsquedas en Internet acerca del tema.
+
+Sin dudas `{php}IPAM` es una alternativa fabulosa ante las muchas opciones privativas existentes, desde `Infloblox` hasta la característica `IPAM` de `Microsoft` disponible a partir de `Microsoft Windows Server 2012 R2`.
 
 ## Referencias
 
@@ -264,3 +268,4 @@ Acceder a la aplicación web, tecleando la `URL` [phpipam.example.tld](https://p
 * [¿Cómo usar phpIPAM como herramienta auxiliar en Pandora FMS?](https://pandorafms.com/blog/es/phpipam/)
 * [Tag: phpIPAM](https://www.jorgedelacruz.es/tag/phpipam/)
 * [Installing phpIPAM on Ubuntu 16.04](https://ithinkvirtual.com/2016/05/08/installing-phpipam-on-ubuntu-16-04/)
+* [Instalar phpIPAM en Debian 9 con Nginx y MariaDB](https://www.sysadminsdecuba.com/2018/11/instalar-phpipam-en-debian-9-con-nginx-y-mariadb/)
