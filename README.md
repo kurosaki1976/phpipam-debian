@@ -32,7 +32,7 @@ tar -xvf phpipam-1.4.tar -C /opt
 ```
 
 > **NOTA**: También se puede utilizar la alternativa GitHub.
-
+>
 > ```bash
 > git clone --recursive https://github.com/phpipam/phpipam.git /opt/phpipam
 > cd /opt/phpipam
