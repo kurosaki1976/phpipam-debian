@@ -159,7 +159,7 @@ mysql -u phpipam_admin -p phpipam_db < /opt/db/SCHEMA.sql
     systemctl restart apache2.service
     ```
 
-    > **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se encuentran en `/var/logs/apache2/`. Para monitorean sus respectivas salidas, ejecutar `tail -fn100 /var/logs/apache2/NOMBRE_FICHERO_LOG`.
+    > **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se encuentran en `/var/logs/apache2/`. Para monitorear sus respectivas salidas, ejecutar `tail -fn100 /var/logs/apache2/NOMBRE_FICHERO_LOG`.
 
     #### `Nginx`
 
@@ -250,7 +250,7 @@ mysql -u phpipam_admin -p phpipam_db < /opt/db/SCHEMA.sql
     systemctl restart nginx.service
     ```
 
-    > **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se encuentran en `/var/logs/apache2/`. Para monitorean sus respectivas salidas, ejecutar `tail -fn100 /var/logs/nginx/NOMBRE_FICHERO_LOG`.
+    > **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se encuentran en `/var/logs/apache2/`. Para monitorear sus respectivas salidas, ejecutar `tail -fn100 /var/logs/nginx/NOMBRE_FICHERO_LOG`.
 
 Finalmente, acceder a la aplicación web, tecleando la `URL` [phpipam.example.tld](https://phpipam.example.tld/), en el navegador de preferencia y usar el par usuario/contraseña `admin/phpipam` para el proceso de `login`.
 
@@ -258,7 +258,7 @@ Finalmente, acceder a la aplicación web, tecleando la `URL` [phpipam.example.tl
 
 La explotación del sistema, si se es administrador de red, o se tienen conocimientos de redes, direccionamiento `IPv4/IPv6`, `VLANs`, `DNS`, etc.; no es complicada. No obstante en las referencias, se listan enlaces que pueden servir de ayuda o realizar búsquedas en Internet acerca del tema.
 
-Sin dudas `{php}IPAM` es una alternativa fabulosa ante las muchas opciones privativas existentes, desde `Infloblox` hasta la característica `IPAM` de `Microsoft` disponible a partir de `Microsoft Windows Server 2012 R2`.
+Sin dudas `{php}IPAM` es una alternativa fabulosa ante las muchas opciones privativas existentes, desde `Infloblox` hasta la característica `IPAM` de `Microsoft` disponible a partir de `Microsoft Windows Server 2008` y posteriores.
 
 ## Referencias
 
