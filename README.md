@@ -252,7 +252,7 @@ mysql -u phpipam_admin -p phpipam_db < /opt/db/SCHEMA.sql
 
     > **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se encuentran en `/var/logs/apache2/`. Para monitorear sus respectivas salidas, ejecutar `tail -fn100 /var/logs/nginx/NOMBRE_FICHERO_LOG`.
 
-Finalmente, acceder a la aplicación web, tecleando la `URL` [phpipam.example.tld](https://phpipam.example.tld/), en el navegador de preferencia y usar el par usuario/contraseña `admin/phpipam` para el proceso de `login`.
+Finalmente, acceder a la aplicación web, tecleando la `URL` [phpipam.example.tld](https://phpipam.example.tld/), en el navegador de preferencia y usar el par usuario/contraseña `admin/ipamadmin` para el proceso de `login`.
 
 ## Conclusiones
 
