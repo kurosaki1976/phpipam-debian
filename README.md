@@ -12,15 +12,15 @@ Como su nombre compuesto indica, `phpIPAM` es una aplicación web de código abi
 
 Entre sus principales funcionalidades, que hacen olvidarnos de productos de pagos, están:
 
-- gestión de direccionamiento IPv4/IPv6,
+- gestión de direccionamiento `IPv4/IPv6`,
 - gestión de subredes,
 - visualización automática de subredes disponibles,
 - visualización gráfica de subredes,
-- descubrimiento automático de nuevos hosts en subredes,
-- comprobaciones automáticas del estado de hosts,
+- descubrimiento automático de nuevos `hosts` en subredes,
+- comprobaciones automáticas del estado de `hosts`,
 - autenticación de dominio (LDAP/Directorio Activo/Radius),
-- gestión de VLAN,
-- calculadora IPv4/IPv6.
+- gestión de `VLAN`,
+- calculadora `IPv4/IPv6`.
 
 ## Instalar y configurar {php}IPAM
 
@@ -265,7 +265,9 @@ Sin dudas `{php}IPAM` es una alternativa fabulosa ante las muchas opciones priva
 * [phpIPAM Open-source IP address management](https://phpipam.net/)
 * [phpipam installation guide](https://phpipam.net/documents/installation/)
 * [phpIPAM on nginx](https://phpipam.net/news/phpipam-on-nginx/)
+* [Reset phpipam admin password](https://phpipam.net/news/reset-phpipam-admin-password/)
 * [¿Cómo usar phpIPAM como herramienta auxiliar en Pandora FMS?](https://pandorafms.com/blog/es/phpipam/)
 * [Tag: phpIPAM](https://www.jorgedelacruz.es/tag/phpipam/)
 * [Installing phpIPAM on Ubuntu 16.04](https://ithinkvirtual.com/2016/05/08/installing-phpipam-on-ubuntu-16-04/)
 * [Instalar phpIPAM en Debian 9 con Nginx y MariaDB](https://www.sysadminsdecuba.com/2018/11/instalar-phpipam-en-debian-9-con-nginx-y-mariadb/)
+* [Best Free & Paid IPAM Tools for IP Address Tracking & Management](https://www.ittsystems.com/best-ipam-tools-ip-address-tracking-management/)
