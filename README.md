@@ -22,7 +22,7 @@ Entre sus principales funcionalidades, que hacen olvidarnos de productos de pago
 - gestión de `VLAN`,
 - calculadora `IPv4/IPv6`.
 
-## Instalar y configurar `{php}IPAM`
+## Aplicación web `{php}IPAM`
 
 - Descargar `{php}IPAM`
 
@@ -60,7 +60,7 @@ $ db ['name'] = 'phpipam_db';
 $ db ['port'] = 3306;
 ```
 
-## Instalar y configurar gestor de base de datos `MariaDB`
+## Gestor de base de datos `MariaDB`
 
 - Instalar paquetes necesarios
 
@@ -83,7 +83,7 @@ MariaDB [(none)]> QUIT;
 mysql -u phpipam_admin -p phpipam_db < /opt/db/SCHEMA.sql
 ```
 
-## Instalar y configurar servidor web
+## Servidor web
 
 - Crear certificado de seguridad TLS/SSL
 
@@ -257,6 +257,8 @@ systemctl restart php7*-fpm.service nginx.service
 ```
 
 > **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se almacenan en `/var/logs/nginx/`. Para monitorear sus respectivas salidas, ejecutar `tail -fn100 /var/logs/nginx/NOMBRE_FICHERO_LOG`.
+
+## Acceder a {php}IPAM
 
 Finalmente, acceder a la aplicación web, tecleando la `URL` [phpipam.example.tld](https://phpipam.example.tld/), en el navegador de preferencia y usar el par usuario/contraseña (`admin/ipamadmin`) para efectuar el `login`.
 
