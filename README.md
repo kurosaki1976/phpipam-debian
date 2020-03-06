@@ -83,7 +83,7 @@ MariaDB [(none)]> QUIT;
 mysql -u phpipam_admin -p phpipam_db < /opt/db/SCHEMA.sql
 ```
 
-## Servidor web (`Apache2/Nginx`)
+## Servidor web `Apache2/Nginx`
 
 - Crear certificado de seguridad TLS/SSL
 
