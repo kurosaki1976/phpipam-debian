@@ -22,6 +22,8 @@ Entre sus principales funcionalidades, que hacen olvidarnos de productos de pago
 - gestión de `VLAN`,
 - calculadora `IPv4/IPv6`.
 
+En esta guía se mostrarán los pasos generales para desplegar `{php}IPAM` en dos de los servidores web más utilizados en redes de computadoras.
+
 ## Aplicación web `{php}IPAM`
 
 - Descargar `{php}IPAM`
