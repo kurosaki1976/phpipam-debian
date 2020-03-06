@@ -83,7 +83,7 @@ MariaDB [(none)]> QUIT;
 mysql -u phpipam_admin -p phpipam_db < /opt/db/SCHEMA.sql
 ```
 
-## Servidor web
+## Servidor web (`Apache2/Nginx`)
 
 - Crear certificado de seguridad TLS/SSL
 
@@ -258,7 +258,7 @@ systemctl restart php7*-fpm.service nginx.service
 
 > **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se almacenan en `/var/logs/nginx/`. Para monitorear sus respectivas salidas, ejecutar `tail -fn100 /var/logs/nginx/NOMBRE_FICHERO_LOG`.
 
-## Acceder a {php}IPAM
+## Acceder a `{php}IPAM`
 
 Finalmente, acceder a la aplicación web, tecleando la `URL` [phpipam.example.tld](https://phpipam.example.tld/), en el navegador de preferencia y usar el par usuario/contraseña (`admin/ipamadmin`) para efectuar el `login`.
 
