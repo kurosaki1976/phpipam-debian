@@ -8,7 +8,7 @@
 
 ### ¿Qué es `{php}IPAM`?
 
-Como su nombre compuesto indica, `{php}IPAM` es una aplicación web de código abierto, para el manejo y administración por medio de lenguaje `PHP`, de las direcciones del Protocolo de Internet (en inglés `Internet Protocol Address Management`, `IPAM`). Su objetivo es proporcionar una gestión de direcciones `IP`, ligera, moderna y útil. Utiliza `backend` de base de datos `MySQL/MariaDB`, bibliotecas `jQuery`, `ajax` y características `HTML5/CSS3`.
+Como su nombre compuesto indica, `{php}IPAM` es una aplicación web de código abierto, para el manejo y administración por medio de lenguaje `PHP`, de las direcciones del Protocolo de Internet (en inglés `Internet Protocol Address Management`, `IPAM`). Su objetivo es proporcionar una gestión de direcciones `IP`, ligera, moderna y útil. Utiliza `backend` de base de datos `MySQL/MariaDB`, bibliotecas `jQuery`, `ajax` y características `HTML5/CSS3` de `Bootstrap`.
 
 Entre sus principales funcionalidades, que hacen olvidarnos de productos de pagos, están:
 
@@ -16,7 +16,7 @@ Entre sus principales funcionalidades, que hacen olvidarnos de productos de pago
 - gestión de subredes (`subnetting`),
 - visualización automática de subredes disponibles,
 - visualización gráfica de subredes,
-- descubrimiento automático de nuevos `hosts` en subredes,
+- descubrimiento automático de nuevos `hosts` por subredes,
 - comprobaciones automáticas del estado de `hosts`,
 - autenticación de dominio (`LDAP`/Directorio Activo/`Radius`),
 - gestión de `VLAN`,
@@ -49,17 +49,29 @@ find /opt/phpipam -type f \-exec chmod 644 {} \;
 find /opt/phpipam -type d \-exec chmod 755 {} \;
 ```
 
-- Definir parámetros de acceso a la base de datos
+- Definir parámetros de acceso al sitio y a la base de datos
 
 ```bash
-cp /opt/phpipam/config.dist.php /opt/phpipam/config.php
+mv /opt/phpipam/config.dist.php /opt/phpipam/config.php
+```
+
+```bash
 nano /opt/phpipam/config.php
 
+/**
+ * database connection details
+ ******************************/
 $ db ['host'] = 'localhost';
 $ db ['user'] = 'phpipam_admin';
 $ db ['pass'] = 'My$ecr3tP@s$w0rd.';
 $ db ['name'] = 'phpipam_db';
 $ db ['port'] = 3306;
+
+/**
+ * Path to access phpipam in site URL, http:/url/BASE/
+ ******************************/
+if(!defined('BASE'))
+define('BASE', "/phpipam/");
 ```
 
 ## Gestor de base de datos `MariaDB`
@@ -82,7 +94,7 @@ MariaDB [(none)]> GRANT ALL ON phpipam_db.* TO 'phpipam_admin'@'localhost' IDENT
 MariaDB [(none)]> FLUSH PRIVILEGES;
 MariaDB [(none)]> QUIT;
 
-mysql -u phpipam_admin -p phpipam_db < /opt/db/SCHEMA.sql
+mysql -u phpipam_admin -p phpipam_db < /opt/phpipam/db/SCHEMA.sql
 ```
 
 ## Servidor web `Apache/Nginx`
@@ -91,14 +103,14 @@ mysql -u phpipam_admin -p phpipam_db < /opt/db/SCHEMA.sql
 
 ```bash
 openssl req -x509 -nodes -days 3650 -sha512 \
-    -subj "/C=CU/ST=Provincia/L=Ciudad/O=EXAMPLE TLD/OU=IT/CN=phpipam.example.tld/emailAddress=postmaster@example.tld/" \
+    -subj "/C=CU/ST=Provincia/L=Ciudad/O=EXAMPLE TLD/OU=IT/CN=www.example.tld/emailAddress=postmaster@example.tld/" \
     -newkey rsa:4096 \
-    -out /etc/ssl/certs/phpIPAM.crt \
-    -keyout /etc/ssl/private/phpIPAM.key
+    -out /etc/ssl/certs/exampleWWW.crt \
+    -keyout /etc/ssl/private/exampleWWW.key
 
 openssl dhparam -out /etc/ssl/dh2048.pem 2048
-chmod 0444 /etc/ssl/certs/phpIPAM.crt
-chmod 0400 /etc/ssl/private/phpIPAM.key
+chmod 0444 /etc/ssl/certs/exampleWWW.crt
+chmod 0400 /etc/ssl/private/exampleWWW.key
 ```
 
 ### `Apache`
@@ -107,8 +119,8 @@ chmod 0400 /etc/ssl/private/phpIPAM.key
 
 ```bash
 apt install apache2 php-cli libapache2-mod-php php-curl php-mysql php-curl php-gd php-intl \
-    php-pear php-imap php-memcache php-pspell php-recode php-tidy php-xmlrpc php-mbstring \
-    php-gettext php-gmp php-json php-xml php-ldap php-mcrypt php-snmp
+    php-pear php-imap php-apcu php-pspell php-recode php-tidy php-xmlrpc php-mbstring \
+    php-gettext php-gmp php-json php-xml php-ldap php-common php-snmp
 ```
 
 - Definir zona horaria
@@ -122,7 +134,7 @@ sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
 - Crear `VirtualHost`
 
 ```bash
-nano /etc/apache2/sites-available/phpIPAM.conf
+nano /etc/apache2/sites-available/exampleWWW.conf
 
 <VirtualHost *:80>
     RewriteEngine on
@@ -130,19 +142,21 @@ nano /etc/apache2/sites-available/phpIPAM.conf
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L,R=301]
 </VirtualHost>
 <IfModule mod_ssl.c>
-    <VirtualHost phpipam.example.tld:443>
-        ServerName phpipam.example.tld
+    <VirtualHost www.example.tld:443>
+        ServerName www.example.tld
         ServerAdmin postmaster@example.tld
-        DirectoryIndex index.php
-        DocumentRoot /opt/phpipam
-        <Directory "/opt/phpipam">
+        DirectoryIndex index.html
+        DocumentRoot /var/www/html
+        Alias /phpipam/ "/opt/phpipam/"
+        <Directory "/opt/phpipam/">
+            DirectoryIndex index.html
             Options Indexes FollowSymLinks MultiViews
             AllowOverride All
             Require all granted
         </Directory>
         SSLEngine on
-        SSLCertificateFile /etc/ssl/certs/phpIPAM.crt
-        SSLCertificateKeyFile /etc/ssl/private/phpIPAM.key
+        SSLCertificateFile /etc/ssl/certs/exampleWWW.crt
+        SSLCertificateKeyFile /etc/ssl/private/exampleWWW.key
         <FilesMatch "\.(cgi|shtml|phtml|php)$">
             SSLOptions +StdEnvVars
         </FilesMatch>
@@ -151,8 +165,8 @@ nano /etc/apache2/sites-available/phpIPAM.conf
         </Directory>
         BrowserMatch "MSIE [2-6]" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
         BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
-        ErrorLog ${APACHE_LOG_DIR}/phpIPAM_error.log
-        CustomLog ${APACHE_LOG_DIR}/phpIPAM_access.log combined
+        ErrorLog ${APACHE_LOG_DIR}/exampleWWW_error.log
+        CustomLog ${APACHE_LOG_DIR}/exampleWWW_access.log combined
     </VirtualHost>
 </IfModule>
 ```
@@ -161,11 +175,11 @@ nano /etc/apache2/sites-available/phpIPAM.conf
 
 ```bash
 a2enmod rewrite ssl
-a2ensite /etc/apache2/sites-available/phpIPAM.conf
+a2ensite exampleWWW.conf
 systemctl restart apache2.service
 ```
 
-> **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se almacenan en `/var/logs/apache2/`. Para monitorear sus respectivas salidas, ejecutar `tail -fn100 /var/logs/apache2/NOMBRE_FICHERO_LOG`.
+> **NOTA**: Los ficheros de bitácora de acceso (`exampleWWW_access.log`) y errores (`exampleWWW_error.log`), se almacenan en `/var/log/apache2/`. Para monitorear sus respectivas salidas, ejecutar `tail -fn100 /var/log/apache2/NOMBRE_FICHERO_LOG`.
 
 ### `Nginx`
 
@@ -173,8 +187,8 @@ systemctl restart apache2.service
 
 ```bash
 apt install nginx-full php-fpm php-curl php-mysql php-curl php-gd php-intl php-pear \
-    php-imap php-memcache php-pspell php-recode php-tidy php-xmlrpc php-mbstring \
-    php-gettext php-gmp php-json php-xml php-ldap php-mcrypt php-snmp
+    php-imap php-apcu php-pspell php-recode php-tidy php-xmlrpc php-mbstring \
+    php-gettext php-gmp php-json php-xml php-ldap php-common php-snmp
 ```
 
 - Definir zona horaria
@@ -188,22 +202,21 @@ sed -i "s/^;date\.timezone =.*$/date\.timezone = 'America\/Havana'/;
 - Crear `VirtualHost`
 
 ```bash
-nano /etc/nginx/sites-available/phpIPAM.conf
+nano /etc/nginx/sites-available/exampleWWW.conf
 
 proxy_cache_path /tmp/cache keys_zone=cache:10m levels=1:2 inactive=600s max_size=100m;
-limit_req_zone $binary_remote_addr zone=download:10m rate=2r/s;
 server {
     listen 80;
     listen 443 ssl http2;
-    root /opt/phpipam;
-    index index.php;
-    server_name phpipam.example.tld;
+    root /var/www/html;
+    index index.nginx-debian.html;
+    server_name www.example.tld;
     if ($scheme = http) {
         return 301 https://$server_name$request_uri;
     }
     ssi on;
-    ssl_certificate /etc/ssl/certs/phpIPAM.crt;
-    ssl_certificate_key /etc/ssl/private/phpIPAM.key;
+    ssl_certificate /etc/ssl/certs/exampleWWW.crt;
+    ssl_certificate_key /etc/ssl/private/exampleWWW.key;
     charset utf-8;
     ssl_dhparam /etc/ssl/dh2048.pem;
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
@@ -240,29 +253,38 @@ server {
         log_not_found off;
     }
     location /phpipam/ {
+        root /opt;
         try_files $uri $uri/ /phpipam/index.php;
         index index.php;
+        location ~ ^/phpipam/api/ {
+            try_files $uri $uri/ /phpipam/api/index.php;
+        }
+        location ~ /phpipam/(.+\.php)$ {
+            fastcgi_pass unix:/run/php/php7*-fpm.sock;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include fastcgi_params;
+            include snippets/fastcgi-php.conf;
+        }
     }
-    location /phpipam/api/ {
-        try_files $uri $uri/ /phpipam/api/index.php;
-    }
-    access_log /var/log/nginx/phpIPAM_access.log;
-    error_log /var/log/nginx/phpIPAM_error.log;
+    access_log /var/log/nginx/exampleWWW_access.log;
+    error_log /var/log/nginx/exampleWWW_error.log;
 }
 ```
 
 - Habilitar `VirtualHost` y reiniciar servidor web
 
 ```bash
-ln -s /etc/nginx/sites-available/phpIPAM.conf /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/exampleWWW.conf /etc/nginx/sites-enabled/
 systemctl restart php7*-fpm.service nginx.service
 ```
 
-> **NOTA**: Los ficheros de bitácora de acceso (`phpIPAM_access.log`) y errores (`phpIPAM_error.log`), se almacenan en `/var/logs/nginx/`. Para monitorear sus respectivas salidas, ejecutar `tail -fn100 /var/logs/nginx/NOMBRE_FICHERO_LOG`.
+> **NOTA**: Los ficheros de bitácora de acceso (`exampleWWW_access.log`) y errores (`exampleWWW_error.log`), se almacenan en `/var/log/nginx/`. Para monitorear sus respectivas salidas, ejecutar `tail -fn100 /var/log/nginx/NOMBRE_FICHERO_LOG`.
 
 ## Acceder a `{php}IPAM`
 
-Finalmente, acceder a la aplicación web, tecleando la `URL` [phpipam.example.tld](https://phpipam.example.tld/), en el navegador de preferencia y usar el par usuario/contraseña (`admin/ipamadmin`) para efectuar el `login`.
+Finalmente, acceder a la aplicación web, introduciendo la dirección `https://www.example.tld/phpipam/`, en el navegador de preferencia y usar el par usuario/contraseña (`admin/ipamadmin`) para efectuar el `login`.
+
+> **NOTA**: Luego de efectuarse el `login`, el sistema pide cambiar la clave por defecto del usuario `admin`.
 
 ## Conclusiones
 
