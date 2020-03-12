@@ -157,6 +157,9 @@ nano /etc/apache2/sites-available/exampleWWW.conf
         SSLEngine on
         SSLCertificateFile /etc/ssl/certs/exampleWWW.crt
         SSLCertificateKeyFile /etc/ssl/private/exampleWWW.key
+        SSLCipherSuite EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH
+        SSLProtocol All -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
+        SSLHonorCipherOrder On
         <FilesMatch "\.(cgi|shtml|phtml|php)$">
             SSLOptions +StdEnvVars
         </FilesMatch>
